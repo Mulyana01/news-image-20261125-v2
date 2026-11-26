@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, chmodSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, chmodSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -17,4 +17,11 @@ const dest = join(outDir, "entry.png");
 copyFileSync(src, dest);
 chmodSync(dest, 0o644);
 
-console.log(`Wrote ${dest}`);
+const srcBytes = statSync(src).size;
+const destBytes = statSync(dest).size;
+if (destBytes !== srcBytes) {
+  console.error(`copy verification failed: source ${srcBytes} bytes, wrote ${destBytes} bytes`);
+  process.exit(1);
+}
+
+console.log(`Wrote ${dest} (${destBytes} bytes, verified against source)`);
